@@ -77,3 +77,8 @@ pgAdmin corre en su propio contenedor, dentro de la misma red de Docker Compose 
 **¿Qué ocurre si la API arranca antes de que la base de datos esté lista, y cómo lo previene la configuración del compose?**
 
 Si la API intenta conectarse antes de que PostgreSQL esté aceptando conexiones, las consultas fallan y la API respondería con errores 500 o se caería al iniciar. Esto se previene con `depends_on: db: condition: service_healthy` en el servicio `api`: Docker Compose no inicia el contenedor de la API hasta que el `healthcheck` de `db` (que ejecuta `pg_isready`) reporte que la base de datos está lista para recibir conexiones.
+
+
+## Arquitectura
+
+Tres contenedores conectados por la red `api_network`: `db` (PostgreSQL), `api` (Node.js/Express, imagen propia) y `pgadmin`. La API espera a que `db` esté `healthy` antes de arrancar (`depends_on` + `healthcheck`). Tanto la API como pgAdmin se conectan a la base de datos usando el nombre del servicio `db` como host, resuelto por el DNS interno de Docker Compose.
